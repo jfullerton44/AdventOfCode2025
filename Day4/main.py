@@ -1,66 +1,100 @@
-"""Advent of Code 2025 - Day X"""
+"""Advent of Code 2025 - Day 4."""
 
-INPUT_FILE = "/workspaces/AdventOfCode2025/Day4/input.txt"
+from pathlib import Path
 
-def is_valid(rows, i, j) -> bool:
+INPUT_FILE = Path(__file__).parent / "input.txt"
+
+
+def is_valid(grid: list[list[str]], row: int, col: int) -> bool:
+    """
+    Check if a cell has 4 or fewer adjacent '@' symbols.
+
+    Args:
+        grid: The 2D grid of characters.
+        row: Row index of the cell to check.
+        col: Column index of the cell to check.
+
+    Returns:
+        True if the cell has 4 or fewer adjacent '@' symbols.
+    """
     count = 0
-    for k in range(i-1,i+2):
-        for n in range(j-1,j+2):
-            if k < 0 or k >= len(rows) or n < 0 or n >= len(rows[k]):
+
+    for r in range(row - 1, row + 2):
+        for c in range(col - 1, col + 2):
+            if r < 0 or r >= len(grid) or c < 0 or c >= len(grid[r]):
                 continue
-            if rows[k][n] == "@":
+            if grid[r][c] == "@":
                 count += 1
+
     return count <= 4
 
-def solve_part1() -> int:
-    result = 0
+
+def load_grid() -> list[list[str]]:
+    """
+    Load the grid from the input file.
+
+    Returns:
+        2D list of characters representing the grid.
+    """
+    grid = []
 
     with open(INPUT_FILE, "r") as file:
-        rows = []
         for line in file:
-            row = []
             line = line.strip()
-            for letter in line:
-                row.append(letter)
-            rows.append(row)
-    for i in range(len(rows)):
-        for j in range(len(rows[i])):
-            if rows[i][j] == "@":
-                if is_valid(rows,i,j):
-                    result+=1
-                    # print(str(i) + " " + str(j))
+            grid.append(list(line))
 
+    return grid
+
+
+def solve_part1() -> int:
+    """
+    Solve Part 1: Count valid '@' cells.
+
+    Returns:
+        Number of '@' cells with 4 or fewer adjacent '@' symbols.
+    """
+    grid = load_grid()
+    result = 0
+
+    for i in range(len(grid)):
+        for j in range(len(grid[i])):
+            if grid[i][j] == "@" and is_valid(grid, i, j):
+                result += 1
 
     return result
 
-def solve_part2() -> int:
-    result = 0
 
-    with open(INPUT_FILE, "r") as file:
-        rows = []
-        for line in file:
-            row = []
-            line = line.strip()
-            for letter in line:
-                row.append(letter)
-            rows.append(row)
-    curr = -1
-    while curr != 0:
-        curr = 0
-        to_remove = []
-        for i in range(len(rows)):
-            for j in range(len(rows[i])):
-                if rows[i][j] == "@":
-                    if is_valid(rows,i,j):
-                        result+=1
-                        curr += 1
-                        to_remove.append((i,j))
-        while len(to_remove) > 0:
-            (i, j) = to_remove.pop()
-            rows[i][j] = "."
+def solve_part2() -> int:
+    """
+    Solve Part 2: Iteratively remove valid '@' cells.
+
+    Repeatedly find and remove '@' cells that have 4 or fewer
+    adjacent '@' symbols until no more can be removed.
+
+    Returns:
+        Total number of '@' cells removed.
+    """
+    grid = load_grid()
+    result = 0
+    removed_count = -1
+
+    while removed_count != 0:
+        removed_count = 0
+        cells_to_remove = []
+
+        for i in range(len(grid)):
+            for j in range(len(grid[i])):
+                if grid[i][j] == "@" and is_valid(grid, i, j):
+                    result += 1
+                    removed_count += 1
+                    cells_to_remove.append((i, j))
+
+        for row, col in cells_to_remove:
+            grid[row][col] = "."
+
     return result
 
 
 if __name__ == "__main__":
-    print("Part 1: " + str(solve_part1()))
-    print("Part 2: " + str(solve_part2()))
+    print(f"Part 1: {solve_part1()}")
+    print(f"Part 2: {solve_part2()}")
