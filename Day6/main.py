@@ -3,6 +3,40 @@
 INPUT_FILE = "/workspaces/AdventOfCode2025/Day6/input.txt"
 
 
+def solve_part1() -> int:
+    result = 0
+    cols = []
+    with open(INPUT_FILE, "r") as file:
+        for line in file:
+            curr = 0
+            line = line.strip()
+            nums = line.split(" ")
+            if nums[0] == "+" or nums[0] == "*":
+                for op in nums:
+                    temp = 0
+                    if op.strip() == '':
+                        continue
+                    if op == "+":
+                        for val in cols[curr]:
+                            temp += val
+                        result += temp
+                    else:
+                        temp = 1
+                        for val in cols[curr]:
+                            temp *= val
+                        result += temp
+                    curr += 1
+                continue
+            for num in nums:
+                if num.strip() == '':
+                    continue
+                if len(cols) <= curr:
+                    cols.append([])
+                cols[curr].append(int(num))
+                curr += 1
+        print(cols)
+    return result
+
 def solve_part2() -> int:
     result = 0
     cols = []
@@ -33,14 +67,6 @@ def solve_part2() -> int:
         print(cols)
     return result
 
-def solve_part1() -> int:
-    result = 0
-
-    with open(INPUT_FILE, "r") as file:
-        for line in file:
-            line = line.strip()
-
-    return result
 
 
 if __name__ == "__main__":
