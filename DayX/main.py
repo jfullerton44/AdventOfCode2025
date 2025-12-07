@@ -1,7 +1,8 @@
 """Advent of Code 2025 - Day X"""
 
-INPUT_FILE = "/workspaces/AdventOfCode2025/DayX/input.txt"
+from pathlib import Path
 
+INPUT_FILE = Path(__file__).parent / "input.txt"
 
 def solve_part1() -> int:
     result = 0
