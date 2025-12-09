@@ -1,6 +1,9 @@
 """Advent of Code 2025 - Day X"""
 
 from pathlib import Path
+from collections import namedtuple
+
+Point = namedtuple('Point', ['x', 'y'])
 
 INPUT_FILE = Path(__file__).parent / "input.txt"
 
@@ -13,7 +16,7 @@ def print_grid(grid):
 
 
 def size(pt1, pt2):
-    return (abs(pt1[0]- pt2[0])+1) * (abs(pt1[1] - pt2[1]) + 1)
+    return (abs(pt1.x - pt2.x) + 1) * (abs(pt1.y - pt2.y) + 1)
 
 def solve_part1() -> int:
     result = 0
@@ -22,10 +25,8 @@ def solve_part1() -> int:
         points = []
         for line in file:
             line = line.strip()
-            pt = line.split(",")
-            for i in range(len(pt)):
-                pt[i] = int(pt[i])
-            points.append(pt)
+            x, y = line.split(",")
+            points.append(Point(int(x), int(y)))
         for i in range(len(points)):
             for j in range(len(points)):
                 if i >= j:
@@ -37,32 +38,31 @@ def solve_part1() -> int:
 
 def flood_fill(grid):
     queue = []
-    queue.append([0,0])
+    queue.append(Point(0, 0))
     while len(queue) > 0:
-        item = queue.pop(0)
-        x, y = item[0], item[1]
-        grid[y][x] = 0
-        if y > 0 and grid[y - 1][x] == -1:
-            grid[y - 1][x] = 0
-            queue.append([x, y - 1])
-        if x > 0 and grid[y][x - 1] == -1:
-            grid[y][x - 1] = 0
-            queue.append([x - 1, y])
-        if x < len(grid[0]) - 1 and grid[y][x + 1] == -1:
-            grid[y][x + 1] = 0
-            queue.append([x + 1, y])
-        if y < len(grid) - 1 and grid[y + 1][x] == -1:
-            grid[y + 1][x] = 0
-            queue.append([x, y + 1])
+        pt = queue.pop(0)
+        grid[pt.y][pt.x] = 0
+        if pt.y > 0 and grid[pt.y - 1][pt.x] == -1:
+            grid[pt.y - 1][pt.x] = 0
+            queue.append(Point(pt.x, pt.y - 1))
+        if pt.x > 0 and grid[pt.y][pt.x - 1] == -1:
+            grid[pt.y][pt.x - 1] = 0
+            queue.append(Point(pt.x - 1, pt.y))
+        if pt.x < len(grid[0]) - 1 and grid[pt.y][pt.x + 1] == -1:
+            grid[pt.y][pt.x + 1] = 0
+            queue.append(Point(pt.x + 1, pt.y))
+        if pt.y < len(grid) - 1 and grid[pt.y + 1][pt.x] == -1:
+            grid[pt.y + 1][pt.x] = 0
+            queue.append(Point(pt.x, pt.y + 1))
 
 def rect_prefix_area(prefix, pt1, pt2):
-    area = prefix[pt2[1]][pt2[0]]
-    if pt1[0] > 0:
-        area -= prefix[pt2[1]][pt1[0]-1]
-    if pt1[1] > 0:
-        area -= prefix[pt1[1] - 1][pt2[0]]
-    if pt1[0] > 0 and pt1[1] > 0:
-        area += prefix[pt1[1]-1][pt1[0]-1]
+    area = prefix[pt2.y][pt2.x]
+    if pt1.x > 0:
+        area -= prefix[pt2.y][pt1.x - 1]
+    if pt1.y > 0:
+        area -= prefix[pt1.y - 1][pt2.x]
+    if pt1.x > 0 and pt1.y > 0:
+        area += prefix[pt1.y - 1][pt1.x - 1]
     return area
 
 def solve_part2() -> int:
@@ -76,11 +76,10 @@ def solve_part2() -> int:
         y_values = []
         for line in file:
             line = line.strip()
-            pt = line.split(",")
-            for i in range(len(pt)):
-                pt[i] = int(pt[i])
-            x_values.append(pt[0])
-            y_values.append(pt[1])
+            x, y = line.split(",")
+            pt = Point(int(x), int(y))
+            x_values.append(pt.x)
+            y_values.append(pt.y)
             points.append(pt)
         x_values = list(set(x_values))
         y_values = list(set(y_values))
@@ -104,22 +103,22 @@ def solve_part2() -> int:
         y_max = j + 1
         converted_pts = []
         for pt in points:
-            converted_pts.append([x_map_big_small[pt[0]],y_map_big_small[pt[1]]])
+            converted_pts.append(Point(x_map_big_small[pt.x], y_map_big_small[pt.y]))
         grid = [[-1 for _ in range(x_max)] for _ in range(y_max)]
         
         for i in range(len(converted_pts)):
             pt = converted_pts[i]
-            grid[pt[1]][pt[0]] = 1
-            j = i+1
+            grid[pt.y][pt.x] = 1
+            j = i + 1
             if j == len(converted_pts):
                 j = 0
             nxt = converted_pts[j]
-            if nxt[0] == pt[0]:
-                for y in range(min(pt[1],nxt[1]), max(pt[1],nxt[1]) + 1):
-                    grid[y][pt[0]] = 1
+            if nxt.x == pt.x:
+                for y in range(min(pt.y, nxt.y), max(pt.y, nxt.y) + 1):
+                    grid[y][pt.x] = 1
             else:
-                for x in range(min(pt[0],nxt[0]), max(pt[0],nxt[0]) + 1):
-                    grid[pt[1]][x] = 1
+                for x in range(min(pt.x, nxt.x), max(pt.x, nxt.x) + 1):
+                    grid[pt.y][x] = 1
         flood_fill(grid)
         for y in range(len(grid)):
             for x in range(len(grid[0])):
@@ -137,10 +136,10 @@ def solve_part2() -> int:
                     temp -= prefix_grid[y-1][x-1]
                 prefix_grid[y][x] = temp
 
-        print_grid(grid)
-        print()
-        print_grid(prefix_grid)
-        print(converted_pts)
+        # print_grid(grid)
+        # print()
+        # print_grid(prefix_grid)
+        # print(converted_pts)
         for i in range(len(converted_pts)):
             for j in range(len(converted_pts)):
                 if i >= j:
@@ -148,14 +147,14 @@ def solve_part2() -> int:
                 pt1 = converted_pts[i]
                 pt2 = converted_pts[j]
                 # Ensure top-left and bottom-right corners
-                top_left = [min(pt1[0], pt2[0]), min(pt1[1], pt2[1])]
-                bottom_right = [max(pt1[0], pt2[0]), max(pt1[1], pt2[1])]
+                top_left = Point(min(pt1.x, pt2.x), min(pt1.y, pt2.y))
+                bottom_right = Point(max(pt1.x, pt2.x), max(pt1.y, pt2.y))
                 prefix_area = rect_prefix_area(prefix_grid, top_left, bottom_right)
                 rect_size = size(top_left, bottom_right)
                 if prefix_area == rect_size:
-                    cpt1 = [x_map[pt1[0]], y_map[pt1[1]]]
-                    cpt2 = [x_map[pt2[0]], y_map[pt2[1]]]
-                    result = max(result, size(cpt1,cpt2))
+                    cpt1 = Point(x_map[pt1.x], y_map[pt1.y])
+                    cpt2 = Point(x_map[pt2.x], y_map[pt2.y])
+                    result = max(result, size(cpt1, cpt2))
                 
     return result
 
