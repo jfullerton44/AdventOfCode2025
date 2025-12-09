@@ -1,21 +1,25 @@
-"""Advent of Code 2025 - Day X"""
+"""Advent of Code 2025 - Day 9"""
 
 from pathlib import Path
-from collections import namedtuple
+from typing import NamedTuple
 
-Point = namedtuple('Point', ['x', 'y'])
+
+class Point(NamedTuple):
+    x: int
+    y: int
+
 
 INPUT_FILE = Path(__file__).parent / "input.txt"
 
 
-def print_grid(grid):
+def print_grid(grid: list[list[int]]) -> None:
     """Print a 2D list in a readable format."""
     for row in grid:
         print(" ".join(str(cell) for cell in row))
     print()
 
 
-def size(pt1, pt2):
+def size(pt1: Point, pt2: Point) -> int:
     return (abs(pt1.x - pt2.x) + 1) * (abs(pt1.y - pt2.y) + 1)
 
 def solve_part1() -> int:
@@ -36,8 +40,8 @@ def solve_part1() -> int:
     return result
 
 
-def flood_fill(grid):
-    queue = []
+def flood_fill(grid: list[list[int]]) -> None:
+    queue: list[Point] = []
     queue.append(Point(0, 0))
     while len(queue) > 0:
         pt = queue.pop(0)
@@ -55,7 +59,7 @@ def flood_fill(grid):
             grid[pt.y + 1][pt.x] = 0
             queue.append(Point(pt.x, pt.y + 1))
 
-def rect_prefix_area(prefix, pt1, pt2):
+def rect_prefix_area(prefix: list[list[int]], pt1: Point, pt2: Point) -> int:
     area = prefix[pt2.y][pt2.x]
     if pt1.x > 0:
         area -= prefix[pt2.y][pt1.x - 1]
