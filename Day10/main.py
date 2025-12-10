@@ -60,37 +60,57 @@ def solve_part1() -> int:
 
 def get_action_length_int_jolts(actions: list[tuple], result: tuple) -> int:
     import heapq
-    # Priority queue: (heuristic + count, count, values)
-    # Heuristic is sum of all values
-    heap = [(sum(result), 0, result)]
-    seen = set()
-    seen.add(result)
+    
+    # Better heuristic: max value (minimum steps needed since each position decreases by at most 1 per step)
+    def heuristic(values):
+        return sum(values) + max(values) * 5 if values else 0
+    
+    # Priority queue: (f_score, count, values)
+    # f_score = count + heuristic
+    initial_h = heuristic(result)
+    heap = [(initial_h, 0, result)]
+    # Track best cost to reach each state
+    best_cost = {result: 0}
     
     while heap:
-        _, count, values = heapq.heappop(heap)
+        f, count, values = heapq.heappop(heap)
+        
+        # Skip if we've found a better path to this state
+        if count > best_cost.get(values, float('inf')):
+            continue
         
         for action in actions:
             new_values = tuple(a - b for a, b in zip(values, action))
-            if new_values in seen:
-                continue
-            seen.add(new_values)
+            
+            # Prune negative values early
             min_val = min(new_values)
             if min_val < 0:
                 continue
-            total = sum(new_values)
-            if total == 0:
-                print(count + 1)
-                return count + 1
-            priority = total + (count + 1)
-            heapq.heappush(heap, (priority, count + 1, new_values))
+            
+            new_count = count + 1
+            
+            # Only process if this is a better path to new_values
+            if new_count >= best_cost.get(new_values, float('inf')):
+                continue
+            best_cost[new_values] = new_count
+            
+            # Check for goal
+            max_val = max(new_values)
+            if max_val == 0:
+                print(new_count)
+                return new_count
+            
+            # f = g + h where g = new_count, h = max(new_values)
+            priority = new_count + heuristic(new_values)
+            heapq.heappush(heap, (priority, new_count, new_values))
 
 def solve_part2() -> int:
     answer = 0
 
     with open(INPUT_FILE, "r") as file:
         for line in file:
-            print(line)
             line = line.strip()
+            print(line)
             parts = line.split(" ")
             res = parts[-1]
             result = []
@@ -114,5 +134,5 @@ def solve_part2() -> int:
 
 
 if __name__ == "__main__":
-    print("Part 1: " + str(solve_part1()))
+    #print("Part 1: " + str(solve_part1()))
     print("Part 2: " + str(solve_part2()))
